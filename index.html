@@ -2,184 +2,6 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>개인 프로젝트 스케줄러</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome 아이콘 CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* 모바일 및 데스크탑에서 좌측 패널 고정 설정 */
-        #left-panel {
-            position: sticky;
-            left: 0;
-            z-index: 30;
-            background-color: #ffffff;
-        }
-        /* 타임라인 컨테이너 가로 스크롤 및 모바일 부드러운 스크롤 */
-        #timeline-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-    </style>
-</head>
-<body class="bg-slate-900 text-slate-100 flex flex-col h-screen overflow-hidden">
-
-    <!-- 상단 헤더 영역 (모바일 공간 최적화 적용) -->
-    <header class="bg-slate-900 border-b border-slate-800 px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-md flex-shrink-0">
-        <div class="flex items-center space-x-2">
-            <div class="bg-indigo-600 text-white p-1.5 rounded-lg text-sm">
-                <i class="fa-solid fa-calendar-days"></i>
-            </div>
-            <div>
-                <h1 class="text-sm sm:text-base font-bold text-white leading-tight">개인 프로젝트 스케줄러</h1>
-                <p class="text-[10px] sm:text-xs text-slate-400 hidden xs:block">PC와 모바일에서 일정 한눈에 관리</p>
-            </div>
-        </div>
-
-        <!-- 컨트롤 버튼 그룹 -->
-        <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
-            <!-- 뷰 스케일 선택 (일/주/월) -->
-            <div class="bg-slate-800 p-0.5 rounded-lg flex items-center border border-slate-700">
-                <button id="btn-scale-day" onclick="setScale('day')" class="px-2 py-1 text-xs font-medium rounded text-white bg-indigo-600">일</button>
-                <button id="btn-scale-week" onclick="setScale('week')" class="px-2 py-1 text-xs font-medium rounded text-slate-300">주</button>
-                <button id="btn-scale-month" onclick="setScale('month')" class="px-2 py-1 text-xs font-medium rounded text-slate-300">월</button>
-            </div>
-
-            <!-- 네비게이션 버튼 -->
-            <div class="flex items-center space-x-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
-                <button onclick="navigateTimeline(-1)" class="px-1.5 py-1 text-xs text-slate-300 hover:text-white"><i class="fa-solid fa-chevron-left"></i></button>
-                <button onclick="goToToday()" class="px-2 py-1 text-xs text-slate-300 hover:text-white font-medium">오늘</button>
-                <button onclick="navigateTimeline(1)" class="px-1.5 py-1 text-xs text-slate-300 hover:text-white"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-
-            <!-- 프로젝트 및 할 일 추가 버튼 -->
-            <button onclick="openProjectModal()" class="px-2 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1">
-                <i class="fa-solid fa-folder-plus"></i> <span class="hidden md:inline">프로젝트</span> 추가
-            </button>
-            <button onclick="openTaskModal()" class="px-2 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg flex items-center gap-1">
-                <i class="fa-solid fa-plus"></i> 할 일 추가
-            </button>
-
-            <!-- 백업/복원/리셋 (모바일 화면에서는 아이콘만 노출) -->
-            <div class="hidden sm:flex items-center space-x-1 pl-1 border-l border-slate-700">
-                <button onclick="exportData()" title="백업" class="p-1.5 text-xs text-slate-300 hover:text-white"><i class="fa-solid fa-download"></i></button>
-                <button onclick="document.getElementById('import-file-input').click()" title="복원" class="p-1.5 text-xs text-slate-300 hover:text-white"><i class="fa-solid fa-upload"></i></button>
-                <button onclick="resetToSampleData()" title="리셋" class="p-1.5 text-xs text-amber-300 hover:text-amber-200"><i class="fa-solid fa-rotate-right"></i></button>
-                <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importData(event)">
-            </div>
-        </div>
-    </header>
-
-    <!-- 메인 컨텐츠 영역 -->
-    <main class="flex flex-1 overflow-hidden relative">
-        <!-- 1. 좌측 프로젝트 목록 (데스크탑 너비 w-52로 축소, 모바일 고정) -->
-        <div id="left-panel" class="w-52 sm:w-56 flex-shrink-0 bg-white border-r border-slate-300 flex flex-col shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
-            <div class="px-3 py-3 bg-slate-100 border-b border-slate-300 font-semibold text-xs text-slate-700 flex justify-between items-center h-[48px] flex-shrink-0">
-                <span>프로젝트 (클릭 수정)</span>
-                <span class="text-[10px] text-slate-500">순서 ▲▼</span>
-            </div>
-            <div id="project-list-container" class="flex-1 overflow-y-auto divide-y divide-slate-200 text-slate-800 text-xs">
-                <!-- 프로젝트 목록이 동적으로 렌더링되는 영역 -->
-            </div>
-        </div>
-
-        <!-- 2. 우측 타임라인 영역 (가로 스크롤 가능) -->
-        <div id="timeline-container" class="flex-1 overflow-x-auto overflow-y-auto bg-white">
-            <div id="timeline-inner" class="min-w-max min-h-full flex flex-col relative text-slate-800">
-                <!-- 타임라인 날짜 헤더 -->
-                <div id="timeline-header" class="sticky top-0 z-20 bg-slate-200 border-b border-slate-300 flex h-[48px] shadow-sm"></div>
-                <!-- 타임라인 스케줄 및 태스크 행 -->
-                <div id="timeline-rows" class="flex-1 relative"></div>
-            </div>
-        </div>
-    </main>
-
-    <!-- 스크립트 로직 (데이터 관리 및 렌더링) -->
-    <script>
-        // 기본 상태 및 샘플 데이터 설정
-        let currentScale = 'day'; // 'day', 'week', 'month'
-        let currentDate = new Date();
-
-        let projects = [
-            { id: 1, name: '웹사이트 리뉴얼', color: '#3b82f6' },
-            { id: 2, name: '신규 앱 개발', color: '#10b981' }
-        ];
-
-        let tasks = [
-            { id: 1, projectId: 1, name: '요구사항 정의', startDate: '2026-11-18', endDate: '2026-11-22' },
-            { id: 2, projectId: 1, name: 'UI/UX 디자인', startDate: '2026-11-22', endDate: '2026-11-26' },
-            { id: 3, projectId: 2, name: '아키텍처 설계', startDate: '2026-11-17', endDate: '2026-11-21' }
-        ];
-
-        function setScale(scale) {
-            currentScale = scale;
-            document.querySelectorAll('#btn-scale-day, #btn-scale-week, #btn-scale-month').forEach(btn => {
-                btn.className = "px-2 py-1 text-xs font-medium rounded text-slate-300";
-            });
-            document.getElementById(`btn-scale-${scale}`).className = "px-2 py-1 text-xs font-medium rounded text-white bg-indigo-600";
-            renderScheduler();
-        }
-
-        function navigateTimeline(direction) {
-            if (currentScale === 'day') {
-                currentDate.setDate(currentDate.getDate() + (direction * 7));
-            } else if (currentScale === 'week') {
-                currentDate.setDate(currentDate.getDate() + (direction * 14));
-            } else {
-                currentDate.setMonth(currentDate.getMonth() + direction);
-            }
-            renderScheduler();
-        }
-
-        function goToToday() {
-            currentDate = new Date();
-            renderScheduler();
-        }
-
-        function renderScheduler() {
-            const header = document.getElementById('timeline-header');
-            const rows = document.getElementById('timeline-rows');
-            const projectList = document.getElementById('project-list-container');
-
-            header.innerHTML = '';
-            rows.innerHTML = '';
-            projectList.innerHTML = '';
-
-            // 날짜 배열 생성 (기본 30일 기준 렌더링 예시)
-            let dates = [];
-            let start = new Date(currentDate);
-            start.setDate(start.getDate() - 3);
-            for (let i = 0; i < 30; i++) {
-                let d = new Date(start);
-                d.setDate(start.getDate() + i);
-                dates.push(d);
-            }
-
-            // 헤더 날짜 렌더링
-            dates.forEach(d => {
-                let cell = document.createElement('div');
-                cell.className = "w-16 flex-shrink-0 flex flex-col items-center justify-center border-r border-slate-300 text-[11px]";
-                let dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-                cell.innerHTML = `<span class="font-bold">${d.getDate()}</span><span class="text-slate-500">${dayNames[d.getDay()]}</span>`;
-                header.appendChild(cell);
-            });
-
-            // 좌측 프로젝트 목록 및 우측 행 렌더링
-            projects.forEach(project => {
-                // 좌측 프로젝트 아이템
-                let pDiv = document.createElement('div');
-                pDiv.className = "px-3 py-4 flex items-center justify-between border-b border-slate-200 h-16 box-border";
-                pDiv.innerHTML = `
-                    <div class="flex items-center space-x-2 truncate">
-                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${project.color};"></span>
-                        <span class="truncate font-medium">${project.name}</span>
-                    </div>
-                    <div class="flex items-center space-x-1 text-slate-400">
-                        <button<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>개인 프로젝트 스케줄러</title>
     <!-- Tailwind CSS CDN -->
@@ -187,7 +9,6 @@
     <!-- FontAwesome 아이콘 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 모바일 및 데스크탑에서 좌측 패널 고정 설정 */
         #left-panel {
             position: sticky;
             left: 0;
@@ -195,12 +16,10 @@
             background-color: #ffffff;
             -webkit-tap-highlight-color: transparent;
         }
-        /* 타임라인 컨테이너 가로 스크롤 및 모바일 부드러운 스크롤 */
         #timeline-container {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
-        /* 터치 반응성 향상 및 탭 지연 방지 */
         button, .clickable {
             touch-action: manipulation;
         }
@@ -222,29 +41,25 @@
 
         <!-- 컨트롤 버튼 그룹 -->
         <div class="flex items-center gap-1 sm:gap-2 flex-wrap">
-            <!-- 뷰 스케일 선택 (일/주/월) -->
             <div class="bg-slate-800 p-0.5 rounded-lg flex items-center border border-slate-700">
                 <button id="btn-scale-day" onclick="setScale('day')" class="px-2 py-1 text-xs font-medium rounded text-white bg-indigo-600">일</button>
                 <button id="btn-scale-week" onclick="setScale('week')" class="px-2 py-1 text-xs font-medium rounded text-slate-300">주</button>
                 <button id="btn-scale-month" onclick="setScale('month')" class="px-2 py-1 text-xs font-medium rounded text-slate-300">월</button>
             </div>
 
-            <!-- 네비게이션 버튼 -->
             <div class="flex items-center space-x-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
                 <button onclick="navigateTimeline(-1)" class="px-1.5 py-1 text-xs text-slate-300 hover:text-white"><i class="fa-solid fa-chevron-left"></i></button>
                 <button onclick="goToToday()" class="px-2 py-1 text-xs text-slate-300 hover:text-white font-medium">오늘</button>
                 <button onclick="navigateTimeline(1)" class="px-1.5 py-1 text-xs text-slate-300 hover:text-white"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
 
-            <!-- 프로젝트 및 할 일 추가 버튼 -->
-            <button onclick="openProjectModal()" class="px-2 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1">
+            <button onclick="openProjectModal()" class="px-2 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1 cursor-pointer">
                 <i class="fa-solid fa-folder-plus"></i> <span class="hidden md:inline">프로젝트</span> 추가
             </button>
-            <button onclick="openTaskModal()" class="px-2 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg flex items-center gap-1">
+            <button onclick="openTaskModal()" class="px-2 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg flex items-center gap-1 cursor-pointer">
                 <i class="fa-solid fa-plus"></i> 할 일 추가
             </button>
 
-            <!-- 백업/복원/리셋 -->
             <div class="hidden sm:flex items-center space-x-1 pl-1 border-l border-slate-700">
                 <button onclick="exportData()" title="백업" class="p-1.5 text-xs text-slate-300 hover:text-white"><i class="fa-solid fa-download"></i></button>
                 <button onclick="document.getElementById('import-file-input').click()" title="복원" class="p-1.5 text-xs text-slate-300 hover:text-white"><i class="fa-solid fa-upload"></i></button>
@@ -256,23 +71,17 @@
 
     <!-- 메인 컨텐츠 영역 -->
     <main class="flex flex-1 overflow-hidden relative">
-        <!-- 1. 좌측 프로젝트 목록 (모바일 고정, 터치 수정 가능) -->
         <div id="left-panel" class="w-48 sm:w-56 flex-shrink-0 bg-white border-r border-slate-300 flex flex-col shadow-md">
             <div class="px-3 py-3 bg-slate-100 border-b border-slate-300 font-semibold text-xs text-slate-700 flex justify-between items-center h-[48px] flex-shrink-0">
                 <span>프로젝트 (클릭 수정)</span>
                 <span class="text-[10px] text-slate-500">순서 ▲▼</span>
             </div>
-            <div id="project-list-container" class="flex-1 overflow-y-auto divide-y divide-slate-200 text-slate-800 text-xs">
-                <!-- 프로젝트 목록이 동적으로 렌더링되는 영역 -->
-            </div>
+            <div id="project-list-container" class="flex-1 overflow-y-auto divide-y divide-slate-200 text-slate-800 text-xs"></div>
         </div>
 
-        <!-- 2. 우측 타임라인 영역 -->
         <div id="timeline-container" class="flex-1 overflow-x-auto overflow-y-auto bg-white">
             <div id="timeline-inner" class="min-w-max min-h-full flex flex-col relative text-slate-800">
-                <!-- 타임라인 날짜 헤더 -->
                 <div id="timeline-header" class="sticky top-0 z-10 bg-slate-200 border-b border-slate-300 flex h-[48px] shadow-sm"></div>
-                <!-- 타임라인 행 -->
                 <div id="timeline-rows" class="flex-1 relative"></div>
             </div>
         </div>
@@ -346,9 +155,8 @@
             });
 
             projects.forEach(project => {
-                // 좌측 프로젝트 아이템 (터치 시 수정 가능하도록 이벤트 연결)
                 let pDiv = document.createElement('div');
-                pDiv.className = "px-3 py-4 flex items-center justify-between border-b border-slate-200 h-16 box-border cursor-pointer hover:bg-slate-50";
+                pDiv.className = "px-3 py-4 flex items-center justify-between border-b border-slate-200 h-16 box-border cursor-pointer hover:bg-slate-50 active:bg-slate-100";
                 pDiv.innerHTML = `
                     <div class="flex items-center space-x-2 truncate pointer-events-none">
                         <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${project.color};"></span>
@@ -359,7 +167,6 @@
                         <button onclick="event.stopPropagation(); moveProject(${project.id}, 1)" class="p-1 hover:text-slate-700"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
                     </div>
                 `;
-                // 프로젝트 영역 터치/클릭 시 수정 모달 오픈
                 pDiv.onclick = () => editProject(project.id);
                 projectList.appendChild(pDiv);
 
@@ -374,7 +181,7 @@
 
                 tasks.filter(t => t.projectId === project.id).forEach(task => {
                     let taskBar = document.createElement('div');
-                    taskBar.className = "absolute top-3 h-10 bg-indigo-500 text-white rounded-lg px-2 flex items-center text-xs shadow-sm truncate cursor-pointer";
+                    taskBar.className = "absolute top-3 h-10 bg-indigo-500 text-white rounded-lg px-2 flex items-center text-xs shadow-sm truncate cursor-pointer active:opacity-80";
                     taskBar.style.backgroundColor = project.color;
                     
                     let startDateObj = new Date(task.startDate);
@@ -393,89 +200,24 @@
             });
         }
 
-        // 모달 및 액션 함수들 (모바일 반응형 연동)
-        function openProjectModal() {
-            alert('프로젝트 추가 창이 열립니다.');
-        }
-
-        function openTaskModal() {
-            alert('할 일 추가 창이 열립니다.');
-        }
-
+        function openProjectModal() { alert('프로젝트 추가 창이 열립니다.'); }
+        function openTaskModal() { alert('할 일 추가 창이 열립니다.'); }
         function editProject(id) {
             let p = projects.find(item => item.id === id);
             if (p) alert(`[프로젝트 수정] "${p.name}" 수정 창을 엽니다.`);
         }
-
         function editTask(id) {
             let t = tasks.find(item => item.id === id);
             if (t) alert(`[할 일 수정] "${t.name}" 수정 창을 엽니다.`);
         }
-
-        function moveProject(id, direction) {
-            renderScheduler();
-        }
-
-        function exportData() { alert('데이터 백업 기능'); }
-        function importData(e) { alert('데이터 복원 기능'); }
-        function resetToSampleData() { alert('샘플 리셋 기능'); }
-
-        window.onload = function() {
-            renderScheduler();
-        };
-    </script>
-</body>
-</html> onclick="moveProject(${project.id}, -1)" class="hover:text-slate-700"><i class="fa-solid fa-arrow-up text-[10px]"></i></button>
-                        <button onclick="moveProject(${project.id}, 1)" class="hover:text-slate-700"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
-                    </div>
-                `;
-                projectList.appendChild(pDiv);
-
-                // 우측 타임라인 행
-                let rDiv = document.createElement('div');
-                rDiv.className = "flex border-b border-slate-200 h-16 relative box-border";
-                
-                // 배경 격자 셀
-                dates.forEach(() => {
-                    let gridCell = document.createElement('div');
-                    gridCell.className = "w-16 flex-shrink-0 border-r border-slate-200 h-full";
-                    rDiv.appendChild(gridCell);
-                });
-
-                // 해당 프로젝트의 태스크 바 배치
-                tasks.filter(t => t.projectId === project.id).forEach(task => {
-                    let taskBar = document.createElement('div');
-                    taskBar.className = "absolute top-3 h-10 bg-indigo-500 text-white rounded-lg px-2 flex items-center text-xs shadow-sm truncate cursor-pointer";
-                    taskBar.style.backgroundColor = project.color;
-                    
-                    // 날짜 계산하여 위치 선정 (간단 구현)
-                    let startDateObj = new Date(task.startDate);
-                    let diffDays = Math.floor((startDateObj - start) / (1000 * 60 * 60 * 24));
-                    let duration = Math.floor((new Date(task.endDate) - startDateObj) / (1000 * 60 * 60 * 24)) + 1;
-
-                    taskBar.style.left = `${diffDays * 64}px`;
-                    taskBar.style.width = `${duration * 64 - 4}px`;
-                    taskBar.innerText = task.name;
-
-                    rDiv.appendChild(taskBar);
-                });
-
-                rows.appendChild(rDiv);
-            });
-        }
-
-        function openProjectModal() { alert('프로젝트 추가 모달 열기'); }
-        function openTaskModal() { alert('할 일 추가 모달 열기'); }
         function moveProject(id, direction) { renderScheduler(); }
         function exportData() { alert('데이터 백업 기능'); }
         function importData(e) { alert('데이터 복원 기능'); }
         function resetToSampleData() { alert('샘플 리셋 기능'); }
 
-        // 초기 실행
         window.onload = function() {
             renderScheduler();
         };
     </script>
 </body>
 </html>
-```[cite: 5]
