@@ -1,60 +1,64 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>개인 프로젝트 스케줄러</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    
-    .main-layout { display: flex; height: calc(100vh - 65px); overflow: hidden; position: relative; }
-    .left-sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; background: #ffffff; border-right: 1px solid #cbd5e1; position: sticky; left: 0; z-index: 20; }
-    .right-timeline { flex: 1; overflow-x: auto; overflow-y: auto; background: #f8fafc; position: relative; -webkit-overflow-scrolling: touch; }
-    
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", sans-serif; background: #f8fafc; color: #1e293b; overflow: hidden; }
+    .main-layout { display: flex; height: calc(100vh - 64px); overflow: hidden; position: relative; }
+    .left-sidebar { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; background: #ffffff; border-right: 1px solid #cbd5e1; position: sticky; left: 0; z-index: 30; }
+    .right-timeline { flex: 1; overflow-x: auto; overflow-y: auto; background: #ffffff; position: relative; -webkit-overflow-scrolling: touch; }
     button, .clickable { touch-action: manipulation; }
+
+    /* 스크롤바 스타일 */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans antialiased overflow-hidden selection:bg-indigo-500 selection:text-white">
+<body>
 
-  <!-- Header -->
-  <header class="bg-slate-900 border-b border-slate-800 h-[65px] px-3 sm:px-4 flex items-center justify-between flex-shrink-0 shadow-md z-40 relative">
-    <div class="flex items-center space-x-2 sm:space-x-3">
-      <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-600/30">
-        <i class="fa-solid fa-chart-gantt text-base sm:text-lg"></i>
+  <!-- 상단 헤더 -->
+  <header class="bg-slate-900 border-b border-slate-800 px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 h-[64px] shadow-md">
+    <div class="flex items-center space-x-2.5 min-w-0">
+      <div class="bg-indigo-600 text-white p-2 rounded-xl text-base flex-shrink-0 shadow">
+        <i class="fa-solid fa-bars-staggered"></i>
       </div>
-      <div>
-        <h1 class="font-bold text-xs sm:text-base text-white tracking-tight">개인 프로젝트 스케줄러</h1>
-        <p class="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block">PC와 모바일에서 일정을 한눈에 관리</p>
+      <div class="truncate">
+        <h1 class="text-sm sm:text-base font-bold text-white leading-tight truncate">개인 프로젝트 스케줄러</h1>
+        <p class="text-[11px] text-slate-400 hidden sm:block">PC와 모바일에서 일정을 한눈에 관리</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+    <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+      <!-- 일/주/월 뷰 전환 -->
       <div class="bg-slate-800 p-1 rounded-lg flex items-center border border-slate-700">
         <button id="btn-scale-day" onclick="setScale('day')" class="px-2 sm:px-2.5 py-1 text-xs font-medium rounded transition-colors bg-indigo-600 text-white shadow">일</button>
         <button id="btn-scale-week" onclick="setScale('week')" class="px-2 sm:px-2.5 py-1 text-xs font-medium rounded text-slate-300 hover:text-white transition-colors">주</button>
         <button id="btn-scale-month" onclick="setScale('month')" class="px-2 sm:px-2.5 py-1 text-xs font-medium rounded text-slate-300 hover:text-white transition-colors">월</button>
       </div>
 
+      <!-- 날짜 네비게이션 -->
       <div class="flex items-center space-x-1 bg-slate-800 p-1 rounded-lg border border-slate-700">
         <button onclick="navigateTimeline(-1)" title="과거로 이동" class="px-1.5 sm:px-2 py-1 text-xs font-medium text-slate-300 hover:text-white rounded hover:bg-slate-700"><i class="fa-solid fa-chevron-left"></i></button>
         <button onclick="goToToday()" class="px-2 sm:px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white rounded hover:bg-slate-700 whitespace-nowrap">오늘</button>
         <button onclick="navigateTimeline(1)" title="미래로 이동" class="px-1.5 sm:px-2 py-1 text-xs font-medium text-slate-300 hover:text-white rounded hover:bg-slate-700"><i class="fa-solid fa-chevron-right"></i></button>
       </div>
 
-      <button onclick="openProjectModal()" class="px-2 sm:px-2.5 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer">
+      <!-- 추가 버튼 -->
+      <button onclick="openProjectModal()" class="px-2.5 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg shadow transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer">
         <i class="fa-solid fa-folder-plus"></i> <span class="hidden md:inline">프로젝트</span> 추가
       </button>
-      <button onclick="openTaskModal()" class="px-2 sm:px-2.5 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer">
+      <button onclick="openTaskModal()" class="px-2.5 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg shadow transition-colors flex items-center gap-1 whitespace-nowrap cursor-pointer">
         <i class="fa-solid fa-plus"></i> 할 일 추가
       </button>
 
+      <!-- 백업/복원/초기화 -->
       <div class="hidden sm:flex items-center space-x-1 pl-1.5 border-l border-slate-700">
         <button onclick="exportData()" title="백업" class="p-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded"><i class="fa-solid fa-download"></i></button>
         <button onclick="document.getElementById('import-file-input').click()" title="복원" class="p-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded"><i class="fa-solid fa-upload"></i></button>
@@ -64,407 +68,448 @@
     </div>
   </header>
 
-  <!-- Main Layout -->
+  <!-- 메인 스케줄러 영역 -->
   <main class="main-layout">
-    <!-- Left Sidebar -->
+    <!-- 좌측 프로젝트 목록 (우측 타임라인과 세로 스크롤 연동) -->
     <div id="left-panel" class="left-sidebar">
-      <div class="px-3 sm:px-4 py-3 bg-slate-100 border-b border-slate-300 font-semibold text-xs text-slate-700 uppercase tracking-wider flex justify-between items-center h-[48px] flex-shrink-0">
+      <div class="px-3 bg-slate-100 border-b border-slate-300 font-semibold text-xs text-slate-700 flex justify-between items-center h-[48px] flex-shrink-0">
         <span>프로젝트 (클릭 수정)</span>
-        <span class="text-[11px] text-slate-400 font-normal hidden sm:inline">▲/▼ 순서</span>
+        <span class="text-[11px] font-normal text-slate-400">▲/▼ 순서</span>
       </div>
-      <!-- 프로젝트 목록 마지막 구분선(border-b) 추가 보완 -->
-      <div id="project-list-container" class="flex-1 overflow-y-auto divide-y divide-slate-200 border-b border-slate-200 bg-white"></div>
+      <div id="project-list-scroll" class="flex-1 overflow-hidden">
+        <div id="project-list-container" class="flex flex-col"></div>
+      </div>
     </div>
 
-    <!-- Right Main Area (Timeline Grid) -->
+    <!-- 우측 타임라인 영역 -->
     <div id="timeline-container" class="right-timeline">
       <div id="timeline-inner" class="min-w-max min-h-full flex flex-col relative bg-white">
-        <!-- Timeline Header -->
-        <div id="timeline-header" class="sticky top-0 z-30 bg-slate-200 border-b border-slate-300 flex h-[48px] shadow-sm"></div>
-        <!-- Timeline Rows Area -->
+        <!-- 날짜 헤더 -->
+        <div id="timeline-header" class="sticky top-0 z-20 bg-slate-100 border-b border-slate-300 flex h-[48px]"></div>
+        <!-- 프로젝트별 할 일 행 -->
         <div id="timeline-rows" class="flex-1 relative"></div>
       </div>
     </div>
   </main>
 
   <!-- 프로젝트 추가/수정 모달 -->
-  <div id="project-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 text-white">
-      <h3 id="project-modal-title" class="text-lg font-bold mb-4">프로젝트 추가</h3>
-      <input type="hidden" id="edit-project-id">
-      <div class="space-y-4">
+  <div id="project-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <h3 id="project-modal-title" class="font-bold text-slate-800">새 프로젝트 추가</h3>
+        <button onclick="closeProjectModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form id="project-form" onsubmit="saveProject(event)" class="p-5 space-y-4">
+        <input type="hidden" id="project-id" />
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">프로젝트명</label>
-          <input type="text" id="project-name-input" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" placeholder="예: 웹사이트 리뉴얼">
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">프로젝트 이름</label>
+          <input type="text" id="project-name" required placeholder="예: 신규 서비스 런칭" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">색상 선택</label>
-          <div class="flex gap-2" id="project-color-picker">
-            <button type="button" onclick="selectColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 ring-2 ring-offset-2 ring-offset-slate-900 ring-blue-500 color-btn" data-color="#3b82f6"></button>
-            <button type="button" onclick="selectColor('#10b981')" class="w-8 h-8 rounded-full bg-emerald-500 color-btn" data-color="#10b981"></button>
-            <button type="button" onclick="selectColor('#8b5cf6')" class="w-8 h-8 rounded-full bg-purple-500 color-btn" data-color="#8b5cf6"></button>
-            <button type="button" onclick="selectColor('#f59e0b')" class="w-8 h-8 rounded-full bg-amber-500 color-btn" data-color="#f59e0b"></button>
-            <button type="button" onclick="selectColor('#ef4444')" class="w-8 h-8 rounded-full bg-rose-500 color-btn" data-color="#ef4444"></button>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">색상 선택</label>
+          <div id="color-picker" class="flex gap-2.5 flex-wrap">
+            <!-- JS에서 색상 버튼 생성 -->
+          </div>
+          <input type="hidden" id="project-color" value="#3b82f6" />
+        </div>
+        <div class="pt-2 flex justify-between items-center">
+          <button type="button" id="btn-delete-project" onclick="deleteProject()" class="hidden px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg">프로젝트 삭제</button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeProjectModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">취소</button>
+            <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg">저장</button>
           </div>
         </div>
-      </div>
-      <div class="flex justify-end gap-2 mt-6">
-        <button onclick="closeProjectModal()" class="px-4 py-2 text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-lg">취소</button>
-        <button id="project-delete-btn" onclick="deleteProject()" class="px-4 py-2 text-xs font-medium bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 rounded-lg hidden">삭제</button>
-        <button onclick="saveProject()" class="px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg">저장</button>
-      </div>
+      </form>
     </div>
   </div>
 
   <!-- 할 일 추가/수정 모달 -->
-  <div id="task-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl p-6 text-white">
-      <h3 id="task-modal-title" class="text-lg font-bold mb-4">할 일 추가</h3>
-      <input type="hidden" id="edit-task-id">
-      <div class="space-y-4">
+  <div id="task-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <h3 id="task-modal-title" class="font-bold text-slate-800">새 할 일 추가</h3>
+        <button onclick="closeTaskModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form id="task-form" onsubmit="saveTask(event)" class="p-5 space-y-4">
+        <input type="hidden" id="task-id" />
         <div>
-          <!-- 소속 프로젝트 -> 프로젝트 이름으로 라벨 변경 및 입력창 높이 통일 (py-2.5) -->
-          <label class="block text-xs font-medium text-slate-400 mb-1">프로젝트 이름</label>
-          <select id="task-project-select" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"></select>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">프로젝트 이름</label>
+          <select id="task-project-id" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">할 일 제목</label>
-          <input type="text" id="task-name-input" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500" placeholder="예: 요구사항 분석 정의서 작성">
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">할 일 제목</label>
+          <input type="text" id="task-title" required placeholder="예: 기획서 작성 및 검토" class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">시작일</label>
-            <input type="date" id="task-start-input" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">시작일</label>
+            <input type="date" id="task-start" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">종료일</label>
-            <input type="date" id="task-end-input" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">종료일</label>
+            <input type="date" id="task-end" required class="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
         </div>
-      </div>
-      <div class="flex justify-end gap-2 mt-6">
-        <button onclick="closeTaskModal()" class="px-4 py-2 text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-lg">취소</button>
-        <button id="task-delete-btn" onclick="deleteTask()" class="px-4 py-2 text-xs font-medium bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 rounded-lg hidden">삭제</button>
-        <button onclick="saveTask()" class="px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg">저장</button>
-      </div>
+        <div class="pt-2 flex justify-between items-center">
+          <button type="button" id="btn-delete-task" onclick="deleteTask()" class="hidden px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg">할 일 삭제</button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeTaskModal()" class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg">취소</button>
+            <button type="submit" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg">저장</button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 
-  <!-- JavaScript Application Logic -->
   <script>
-    let currentScale = 'day';
-    let currentDate = new Date();
-    let selectedColorHex = '#3b82f6';
+    const STORAGE_KEY = 'personal_project_scheduler_v2';
+    const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4', '#6366f1'];
 
-    let sampleProjects = [
-      { id: 'p1', name: '웹사이트 리뉴얼', color: '#3b82f6' },
-      { id: 'p2', name: '신규 앱 개발', color: '#10b981' }
-    ];
+    let currentScale = 'day'; // 'day' | 'week' | 'month'
+    let baseDate = new Date();
+    baseDate.setHours(0, 0, 0, 0);
 
-    let sampleTasks = [
-      { id: 't1', projectId: 'p1', name: '요구사항 정의', startDate: formatDateStr(new Date()), endDate: formatDateStr(new Date(Date.now() + 86400000 * 3)) },
-      { id: 't2', projectId: 'p1', name: 'UI/UX 디자인', startDate: formatDateStr(new Date(Date.now() + 86400000 * 4)), endDate: formatDateStr(new Date(Date.now() + 86400000 * 8)) },
-      { id: 't3', projectId: 'p2', name: '아키텍처 설계', startDate: formatDateStr(new Date()), endDate: formatDateStr(new Date(Date.now() + 86400000 * 5)) }
-    ];
+    let state = {
+      projects: [],
+      tasks: []
+    };
 
-    let projects = JSON.parse(localStorage.getItem('scheduler_projects')) || sampleProjects;
-    let tasks = JSON.parse(localStorage.getItem('scheduler_tasks')) || sampleTasks;
+    // 날짜 유틸리티
+    function formatDateStr(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseDateStr(str) {
+      const [y, m, d] = str.split('-').map(Number);
+      const dt = new Date(y, m - 1, d);
+      dt.setHours(0, 0, 0, 0);
+      return dt;
+    }
+
+    function addDays(date, days) {
+      const res = new Date(date);
+      res.setDate(res.getDate() + days);
+      return res;
+    }
+
+    // 초기 샘플 데이터
+    function getDefaultData() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return {
+        projects: [
+          { id: 'p1', name: '매출발생목록', color: '#3b82f6' },
+          { id: 'p2', name: 'ea 개발,자체가동', color: '#10b981' }
+        ],
+        tasks: [
+          { id: 't1', projectId: 'p1', title: 'EA 자체 가동', start: formatDateStr(today), end: formatDateStr(addDays(today, 3)) },
+          { id: 't2', projectId: 'p1', title: '쇼핑제휴마케팅', start: formatDateStr(addDays(today, 5)), end: formatDateStr(addDays(today, 9)) },
+          { id: 't3', projectId: 'p1', title: '장기프로젝트준비', start: formatDateStr(today), end: formatDateStr(addDays(today, 18)) },
+          { id: 't4', projectId: 'p1', title: '자녀관리앱개발', start: formatDateStr(today), end: formatDateStr(addDays(today, 7)) },
+          { id: 't5', projectId: 'p1', title: '앱개발 론칭(소액가동)', start: formatDateStr(addDays(today, 2)), end: formatDateStr(addDays(today, 7)) },
+          { id: 't6', projectId: 'p1', title: '학원버스 앱개발', start: formatDateStr(addDays(today, 2)), end: formatDateStr(addDays(today, 9)) },
+          { id: 't7', projectId: 'p2', title: '로직 기획서 완료', start: formatDateStr(today), end: formatDateStr(addDays(today, 4)) },
+          { id: 't8', projectId: 'p2', title: '코딩작업', start: formatDateStr(addDays(today, 7)), end: formatDateStr(addDays(today, 10)) }
+        ]
+      };
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          state = JSON.parse(saved);
+        } catch (e) {
+          state = getDefaultData();
+        }
+      } else {
+        state = getDefaultData();
+        saveData();
+      }
+    }
 
     function saveData() {
-      localStorage.setItem('scheduler_projects', JSON.stringify(projects));
-      localStorage.setItem('scheduler_tasks', JSON.stringify(tasks));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function formatDateStr(date) {
-      let d = new Date(date);
-      let month = '' + (d.getMonth() + 1),
-          day = '' + d.getDate(),
-          year = d.getFullYear();
-      if (month.length < 2) month = '0' + month;
-      if (day.length < 2) day = '0' + day;
-      return [year, month, day].join('-');
+    // 할 일 겹침 계산 (레인 배정 알고리즘)
+    function assignTaskLanes(tasks) {
+      const sorted = [...tasks].sort((a, b) => {
+        if (a.start !== b.start) return a.start.localeCompare(b.start);
+        return a.end.localeCompare(b.end);
+      });
+
+      const lanes = []; // 각 레인의 마지막 종료일 저장
+      const assigned = sorted.map(task => {
+        let laneIndex = -1;
+        for (let i = 0; i < lanes.length; i++) {
+          // 종료일과 시작일이 겹치지 않을 때만 같은 레인 배치 (종료일 < 시작일)
+          if (lanes[i] < task.start) {
+            laneIndex = i;
+            lanes[i] = task.end;
+            break;
+          }
+        }
+        if (laneIndex === -1) {
+          laneIndex = lanes.length;
+          lanes.push(task.end);
+        }
+        return { ...task, lane: laneIndex };
+      });
+
+      return {
+        tasks: assigned,
+        laneCount: Math.max(1, lanes.length)
+      };
     }
 
+    // 스케줄러 렌더링
+    function renderScheduler() {
+      const colWidth = currentScale === 'day' ? 48 : currentScale === 'week' ? 28 : 14;
+      const startOffset = -15;
+      const totalDays = 75;
+      const startDate = addDays(baseDate, startOffset);
+      const todayStr = formatDateStr(new Date());
+
+      // 1. 날짜 헤더 렌더링
+      const headerEl = document.getElementById('timeline-header');
+      headerEl.innerHTML = '';
+      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+
+      for (let i = 0; i < totalDays; i++) {
+        const d = addDays(startDate, i);
+        const dStr = formatDateStr(d);
+        const isToday = dStr === todayStr;
+        const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+
+        const cell = document.createElement('div');
+        cell.style.width = `${colWidth}px`;
+        cell.className = `flex-shrink-0 border-r border-slate-200 flex flex-col items-center justify-center text-xs select-none ${
+          isToday ? 'bg-indigo-50 text-indigo-600 font-bold' : isWeekend ? 'bg-slate-100/70 text-slate-500' : 'text-slate-700'
+        }`;
+
+        if (currentScale === 'month') {
+          cell.innerHTML = d.getDate() === 1 || i === 0
+            ? `<span class="text-[10px] font-bold text-indigo-600">${d.getMonth() + 1}월</span>`
+            : `<span class="text-[10px]">${d.getDate()}</span>`;
+        } else {
+          cell.innerHTML = `
+            <span class="leading-tight">${d.getDate()}</span>
+            <span class="text-[10px] ${isToday ? 'text-indigo-500' : 'text-slate-400'}">${dayNames[d.getDay()]}</span>
+          `;
+        }
+        headerEl.appendChild(cell);
+      }
+
+      // 2. 좌측 프로젝트 목록 & 우측 타임라인 행 동시 렌더링 (높이 100% 동기화)
+      const projectListEl = document.getElementById('project-list-container');
+      const timelineRowsEl = document.getElementById('timeline-rows');
+      projectListEl.innerHTML = '';
+      timelineRowsEl.innerHTML = '';
+
+      const LANE_HEIGHT = 34;   // 할 일 막대 1줄 높이 + 간격
+      const ROW_PADDING = 16;   // 위아래 여백 (8px씩)
+      const MIN_ROW_HEIGHT = 56; // 최소 행 높이
+
+      state.projects.forEach((proj, idx) => {
+        const projTasks = state.tasks.filter(t => t.projectId === proj.id);
+        const { tasks: lanedTasks, laneCount } = assignTaskLanes(projTasks);
+
+        // 우측 타임라인의 할 일 줄 수에 맞춰 정확한 행 높이 계산
+        const rowHeight = Math.max(MIN_ROW_HEIGHT, laneCount * LANE_HEIGHT + ROW_PADDING);
+
+        // (A) 좌측 프로젝트 행 생성 (계산된 rowHeight와 하단 구분선 border-b border-slate-300 적용)
+        const leftItem = document.createElement('div');
+        leftItem.style.height = `${rowHeight}px`;
+        leftItem.className = 'px-3 border-b border-slate-300 flex items-start justify-between pt-3.5 bg-white hover:bg-slate-50 transition-colors group';
+        leftItem.innerHTML = `
+          <div onclick="openProjectModal('${proj.id}')" class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
+            <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${proj.color}"></span>
+            <span class="text-xs sm:text-sm font-medium text-slate-800 truncate group-hover:text-indigo-600">${proj.name}</span>
+          </div>
+          <div class="flex items-center gap-1 ml-1 flex-shrink-0">
+            <button onclick="moveProject(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="p-1 text-[11px] text-slate-400 hover:text-slate-700 disabled:opacity-25"><i class="fa-solid fa-arrow-up"></i></button>
+            <button onclick="moveProject(${idx}, 1)" ${idx === state.projects.length - 1 ? 'disabled' : ''} class="p-1 text-[11px] text-slate-400 hover:text-slate-700 disabled:opacity-25"><i class="fa-solid fa-arrow-down"></i></button>
+          </div>
+        `;
+        projectListEl.appendChild(leftItem);
+
+        // (B) 우측 타임라인 행 생성 (동일한 rowHeight 및 하단 구분선 border-b border-slate-300 적용)
+        const rightRow = document.createElement('div');
+        rightRow.style.height = `${rowHeight}px`;
+        rightRow.style.width = `${totalDays * colWidth}px`;
+        rightRow.className = 'relative border-b border-slate-300 flex';
+
+        // 세로 날짜 그리드 배경
+        for (let i = 0; i < totalDays; i++) {
+          const d = addDays(startDate, i);
+          const isToday = formatDateStr(d) === todayStr;
+          const gridCell = document.createElement('div');
+          gridCell.style.width = `${colWidth}px`;
+          gridCell.className = `h-full border-r border-slate-100 flex-shrink-0 ${isToday ? 'bg-indigo-50/40' : ''}`;
+          gridCell.onclick = () => openTaskModal(null, proj.id, formatDateStr(d));
+          rightRow.appendChild(gridCell);
+        }
+
+        // 할 일 막대 렌더링
+        lanedTasks.forEach(task => {
+          const tStart = parseDateStr(task.start);
+          const tEnd = parseDateStr(task.end);
+          const diffStart = Math.round((tStart - startDate) / (1000 * 60 * 60 * 24));
+          const duration = Math.max(1, Math.round((tEnd - tStart) / (1000 * 60 * 60 * 24)) + 1);
+
+          if (diffStart + duration < 0 || diffStart > totalDays) return;
+
+          const bar = document.createElement('div');
+          const leftPx = diffStart * colWidth + 2;
+          const widthPx = Math.max(colWidth - 4, duration * colWidth - 4);
+          const topPx = 8 + task.lane * LANE_HEIGHT;
+
+          bar.style.left = `${leftPx}px`;
+          bar.style.width = `${widthPx}px`;
+          bar.style.top = `${topPx}px`;
+          bar.style.height = '28px';
+          bar.style.backgroundColor = proj.color;
+          bar.className = 'absolute rounded-lg px-2.5 flex items-center text-white text-xs font-medium shadow-sm cursor-pointer hover:brightness-110 transition-all truncate select-none z-10';
+          bar.textContent = task.title;
+          bar.title = `${task.title} (${task.start} ~ ${task.end})`;
+          bar.onclick = (e) => {
+            e.stopPropagation();
+            openTaskModal(task.id);
+          };
+
+          rightRow.appendChild(bar);
+        });
+
+        timelineRowsEl.appendChild(rightRow);
+      });
+    }
+
+    // 세로 스크롤 동기화
+    const timelineContainer = document.getElementById('timeline-container');
+    const projectListScroll = document.getElementById('project-list-scroll');
+    timelineContainer.addEventListener('scroll', () => {
+      projectListScroll.scrollTop = timelineContainer.scrollTop;
+    });
+
+    // 뷰 스케일 변경
     function setScale(scale) {
       currentScale = scale;
       ['day', 'week', 'month'].forEach(s => {
-        let btn = document.getElementById(`btn-scale-${s}`);
-        if(s === scale) {
-          btn.className = "px-2 sm:px-2.5 py-1 text-xs font-medium rounded transition-colors bg-indigo-600 text-white shadow";
+        const btn = document.getElementById(`btn-scale-${s}`);
+        if (s === scale) {
+          btn.className = 'px-2 sm:px-2.5 py-1 text-xs font-medium rounded transition-colors bg-indigo-600 text-white shadow';
         } else {
-          btn.className = "px-2 sm:px-2.5 py-1 text-xs font-medium rounded text-slate-300 hover:text-white transition-colors";
+          btn.className = 'px-2 sm:px-2.5 py-1 text-xs font-medium rounded text-slate-300 hover:text-white transition-colors';
         }
       });
       renderScheduler();
     }
 
-    function navigateTimeline(direction) {
-      if (currentScale === 'day') {
-        currentDate.setDate(currentDate.getDate() + (direction * 7));
-      } else if (currentScale === 'month') {
-        currentDate.setMonth(currentDate.getMonth() + (direction * 3));
-      } else {
-        currentDate.setDate(currentDate.getDate() + (direction * 14));
-      }
+    function navigateTimeline(dir) {
+      const step = currentScale === 'day' ? 7 : currentScale === 'week' ? 14 : 30;
+      baseDate = addDays(baseDate, dir * step);
       renderScheduler();
     }
 
     function goToToday() {
-      currentDate = new Date();
+      baseDate = new Date();
+      baseDate.setHours(0, 0, 0, 0);
       renderScheduler();
+      scrollToToday();
     }
 
-    function renderScheduler() {
-      renderProjectList();
-      renderTimelineHeader();
-      renderTimelineRows();
+    function scrollToToday() {
+      const colWidth = currentScale === 'day' ? 48 : currentScale === 'week' ? 28 : 14;
+      timelineContainer.scrollLeft = Math.max(0, 12 * colWidth);
     }
 
-    function renderProjectList() {
-      const container = document.getElementById('project-list-container');
-      container.innerHTML = '';
-      
-      if (projects.length === 0) {
-        container.innerHTML = `<div class="p-4 text-xs text-slate-400 text-center">등록된 프로젝트가 없습니다.</div>`;
-        return;
-      }
-
-      projects.forEach((proj, idx) => {
-        let div = document.createElement('div');
-        div.className = "px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors h-[57px]";
-        div.innerHTML = `
-          <div class="flex items-center space-x-2.5 cursor-pointer flex-1 truncate" onclick="openProjectModal('${proj.id}')">
-            <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${proj.color};"></span>
-            <span class="text-xs font-medium text-slate-800 truncate">${proj.name}</span>
-          </div>
-          <div class="flex items-center space-x-1 flex-shrink-0 text-slate-400">
-            <button onclick="moveProject('${proj.id}', -1)" ${idx === 0 ? 'disabled class="opacity-30 cursor-not-allowed p-1"' : 'class="hover:text-slate-600 p-1"'}><i class="fa-solid fa-arrow-up text-[10px]"></i></button>
-            <button onclick="moveProject('${proj.id}', 1)" ${idx === projects.length - 1 ? 'disabled class="opacity-30 cursor-not-allowed p-1"' : 'class="hover:text-slate-600 p-1"'}><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    function moveProject(id, direction) {
-      let idx = projects.findIndex(p => p.id === id);
-      if (idx < 0) return;
-      let targetIdx = idx + direction;
-      if (targetIdx < 0 || targetIdx >= projects.length) return;
-      let temp = projects[idx];
-      projects[idx] = projects[targetIdx];
-      projects[targetIdx] = temp;
+    // 프로젝트 순서 이동
+    function moveProject(index, direction) {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= state.projects.length) return;
+      const temp = state.projects[index];
+      state.projects[index] = state.projects[targetIndex];
+      state.projects[targetIndex] = temp;
       saveData();
       renderScheduler();
     }
 
-    function getTimelineDates() {
-      let dates = [];
-      let start = new Date(currentDate);
-      
-      if (currentScale === 'day') {
-        start.setDate(start.getDate() - 3);
-        for (let i = 0; i < 21; i++) {
-          let d = new Date(start);
-          d.setDate(d.getDate() + i);
-          dates.push(d);
-        }
-      } else if (currentScale === 'week') {
-        start.setDate(start.getDate() - 14);
-        for (let i = 0; i < 14; i++) {
-          let d = new Date(start);
-          d.setDate(d.getDate() + (i * 7));
-          dates.push(d);
-        }
-      } else {
-        start.setMonth(start.getMonth() - 2);
-        for (let i = 0; i < 8; i++) {
-          let d = new Date(start);
-          d.setMonth(d.getMonth() + i);
-          dates.push(d);
-        }
-      }
-      return dates;
-    }
-
-    function renderTimelineHeader() {
-      const header = document.getElementById('timeline-header');
-      header.innerHTML = '';
-      let dates = getTimelineDates();
-
-      dates.forEach(d => {
-        let cell = document.createElement('div');
-        cell.className = "flex-shrink-0 border-r border-slate-300 flex flex-col items-center justify-center text-slate-700 text-xs font-medium";
-        if (currentScale === 'day') {
-          cell.style.width = '50px';
-          let isToday = formatDateStr(d) === formatDateStr(new Date());
-          if (isToday) cell.className += " bg-indigo-50 font-bold text-indigo-600";
-          cell.innerHTML = `<span>${d.getDate()}</span><span class="text-[10px] text-slate-400">${['일','월','화','수','목','금','토'][d.getDay()]}</span>`;
-        } else if (currentScale === 'week') {
-          cell.style.width = '80px';
-          cell.innerHTML = `<span>${d.getMonth()+1}/${d.getDate()}주</span>`;
-        } else {
-          cell.style.width = '100px';
-          cell.innerHTML = `<span>${d.getFullYear()}.${d.getMonth()+1}</span>`;
-        }
-        header.appendChild(cell);
+    // 프로젝트 모달 제어
+    function renderColorPicker(selectedColor) {
+      const picker = document.getElementById('color-picker');
+      picker.innerHTML = '';
+      COLORS.forEach(c => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.style.backgroundColor = c;
+        btn.className = `w-7 h-7 rounded-full transition-transform ${selectedColor === c ? 'ring-2 ring-offset-2 ring-slate-800 scale-110' : 'opacity-80 hover:opacity-100'}`;
+        btn.onclick = () => {
+          document.getElementById('project-color').value = c;
+          renderColorPicker(c);
+        };
+        picker.appendChild(btn);
       });
     }
 
-    function renderTimelineRows() {
-      const rowsArea = document.getElementById('timeline-rows');
-      rowsArea.innerHTML = '';
-      let dates = getTimelineDates();
-
-      if (projects.length === 0) {
-        rowsArea.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">프로젝트를 추가하여 일정을 시작하세요.</div>`;
-        return;
-      }
-
-      projects.forEach(proj => {
-        let row = document.createElement('div');
-        row.className = "border-b border-slate-200 flex relative h-[57px] items-center";
-        
-        let gridBg = document.createElement('div');
-        gridBg.className = "absolute inset-0 flex pointer-events-none";
-        dates.forEach(d => {
-          let col = document.createElement('div');
-          col.className = "border-r border-slate-200/60 flex-shrink-0 h-full";
-          if (currentScale === 'day') col.style.width = '50px';
-          else if (currentScale === 'week') col.style.width = '80px';
-          else col.style.width = '100px';
-          gridBg.appendChild(col);
-        });
-        row.appendChild(gridBg);
-
-        // 중첩되거나 맞닿아 있는 할 일 박스들을 구분할 수 있도록 둥근 테두리 및 간격 적용
-        let projTasks = tasks.filter(t => t.projectId === proj.id);
-        
-        // 날짜순 정렬
-        projTasks.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
-        // 연속되거나 겹치는 할 일 감지하여 행(row) 높이 확장 및 다중 레인 처리
-        let lanes = [];
-        projTasks.forEach(task => {
-          let placed = false;
-          for (let lane of lanes) {
-            let lastTask = lane[lane.length - 1];
-            // 종료일이 다음 할 일의 시작일보다 작거나 같으면 같은 레인에 배치 가능 (단, 구분을 위해 간격 필요)
-            if (new Date(lastTask.endDate) < new Date(task.startDate)) {
-              lane.push(task);
-              placed = true;
-              break;
-            }
-          }
-          if (!placed) {
-            lanes.push([task]);
-          }
-        });
-
-        // 레인이 2개 이상이면 행 높이 확장
-        if (lanes.length > 1) {
-          row.style.height = `${lanes.length * 36 + 16}px`;
-          gridBg.style.height = `${lanes.length * 36 + 16}px`;
-        }
-
-        lanes.forEach((lane, laneIdx) => {
-          lane.forEach(task => {
-            let taskBar = createBarElement(task, proj, dates, laneIdx);
-            if (taskBar) row.appendChild(taskBar);
-          });
-        });
-
-        rowsArea.appendChild(row);
-      });
-    }
-
-    function createBarElement(task, proj, dates, laneIdx) {
-      let startD = new Date(task.startDate);
-      let endD = new Date(task.endDate);
-      let firstDate = dates[0];
-      
-      let dayMs = 86400000;
-      let diffDays = (startD - firstDate) / dayMs;
-      let durationDays = ((endD - startD) / dayMs) + 1;
-
-      let unitW = currentScale === 'day' ? 50 : currentScale === 'week' ? (80/7) : (100/30);
-      let leftPx = diffDays * unitW;
-      let widthPx = durationDays * unitW - 2; // 연속된 박스 구분을 위한 미세한 간격 확보
-
-      let bar = document.createElement('div');
-      // 박스 모서리를 둥글게(rounded-lg) 하고 양옆에 미세한 경계 테두리를 주어 연속될 때 구분되도록 함
-      bar.className = "absolute h-7 rounded-lg shadow-sm flex items-center px-2 text-[11px] text-white font-medium cursor-pointer truncate transition-transform hover:scale-[1.01] border border-white/20";
-      bar.style.left = `${Math.max(0, leftPx)}px`;
-      bar.style.width = `${Math.max(30, widthPx)}px`;
-      bar.style.backgroundColor = proj.color;
-      bar.style.top = `${8 + (laneIdx * 34)}px`;
-      bar.innerHTML = `<span class="truncate">${task.name}</span>`;
-      bar.title = `${task.name} (${task.startDate} ~ ${task.endDate})`;
-      bar.onclick = () => openTaskModal(task.id);
-
-      return bar;
-    }
-
-    function openProjectModal(id = null) {
+    function openProjectModal(projectId = null) {
       const modal = document.getElementById('project-modal');
-      const title = document.getElementById('project-modal-title');
-      const deleteBtn = document.getElementById('project-delete-btn');
-      const nameInput = document.getElementById('project-name-input');
-      const idInput = document.getElementById('edit-project-id');
+      const titleEl = document.getElementById('project-modal-title');
+      const idEl = document.getElementById('project-id');
+      const nameEl = document.getElementById('project-name');
+      const colorEl = document.getElementById('project-color');
+      const delBtn = document.getElementById('btn-delete-project');
 
-      if (id) {
-        let proj = projects.find(p => p.id === id);
-        title.innerText = '프로젝트 수정';
-        nameInput.value = proj.name;
-        idInput.value = proj.id;
-        selectColor(proj.color);
-        deleteBtn.classList.remove('hidden');
+      if (projectId) {
+        const proj = state.projects.find(p => p.id === projectId);
+        if (!proj) return;
+        titleEl.textContent = '프로젝트 수정';
+        idEl.value = proj.id;
+        nameEl.value = proj.name;
+        colorEl.value = proj.color;
+        delBtn.classList.remove('hidden');
+        renderColorPicker(proj.color);
       } else {
-        title.innerText = '프로젝트 추가';
-        nameInput.value = '';
-        idInput.value = '';
-        selectColor('#3b82f6');
-        deleteBtn.classList.add('hidden');
+        titleEl.textContent = '새 프로젝트 추가';
+        idEl.value = '';
+        nameEl.value = '';
+        colorEl.value = COLORS[0];
+        delBtn.classList.add('hidden');
+        renderColorPicker(COLORS[0]);
       }
+
       modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
 
     function closeProjectModal() {
-      document.getElementById('project-modal').classList.add('hidden');
+      const modal = document.getElementById('project-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
 
-    function selectColor(color) {
-      selectedColorHex = color;
-      document.querySelectorAll('.color-btn').forEach(btn => {
-        if(btn.dataset.color === color) {
-          btn.className = "w-8 h-8 rounded-full ring-2 ring-offset-2 ring-offset-slate-900 ring-white color-btn";
-        } else {
-          btn.className = "w-8 h-8 rounded-full color-btn opacity-70";
-          btn.style.backgroundColor = btn.dataset.color;
-        }
-      });
-    }
-
-    function saveProject() {
-      const name = document.getElementById('project-name-input').value.trim();
-      const id = document.getElementById('edit-project-id').value;
-
-      if (!name) {
-        alert('프로젝트명을 입력해주세요.');
-        return;
-      }
+    function saveProject(e) {
+      e.preventDefault();
+      const id = document.getElementById('project-id').value;
+      const name = document.getElementById('project-name').value.trim();
+      const color = document.getElementById('project-color').value;
+      if (!name) return;
 
       if (id) {
-        let proj = projects.find(p => p.id === id);
-        proj.name = name;
-        proj.color = selectedColorHex;
+        const proj = state.projects.find(p => p.id === id);
+        if (proj) {
+          proj.name = name;
+          proj.color = color;
+        }
       } else {
-        let newProj = {
+        state.projects.push({
           id: 'p_' + Date.now(),
-          name: name,
-          color: selectedColorHex
-        };
-        projects.push(newProj);
+          name,
+          color
+        });
       }
 
       saveData();
@@ -473,96 +518,93 @@
     }
 
     function deleteProject() {
-      const id = document.getElementById('edit-project-id').value;
-      if (confirm('프로젝트와 소속된 모든 할 일이 삭제됩니다. 정말 삭제하시겠습니까?')) {
-        projects = projects.filter(p => p.id !== id);
-        tasks = tasks.filter(t => t.projectId !== id);
-        saveData();
-        closeProjectModal();
-        renderScheduler();
-      }
+      const id = document.getElementById('project-id').value;
+      if (!id) return;
+      if (!confirm('이 프로젝트와 포함된 모든 할 일을 삭제할까요?')) return;
+      state.projects = state.projects.filter(p => p.id !== id);
+      state.tasks = state.tasks.filter(t => t.projectId !== id);
+      saveData();
+      closeProjectModal();
+      renderScheduler();
     }
 
-    function openTaskModal(id = null) {
-      if (projects.length === 0) {
-        alert('할 일을 추가하려면 먼저 프로젝트를 추가해주세요.');
+    // 할 일 모달 제어
+    function openTaskModal(taskId = null, defaultProjectId = null, defaultDate = null) {
+      if (state.projects.length === 0) {
+        alert('먼저 프로젝트를 추가해 주세요.');
+        openProjectModal();
         return;
       }
 
       const modal = document.getElementById('task-modal');
-      const title = document.getElementById('task-modal-title');
-      const deleteBtn = document.getElementById('task-delete-btn');
-      const select = document.getElementById('task-project-select');
-      const nameInput = document.getElementById('task-name-input');
-      const startInput = document.getElementById('task-start-input');
-      const endInput = document.getElementById('task-end-input');
-      const idInput = document.getElementById('edit-task-id');
+      const titleEl = document.getElementById('task-modal-title');
+      const idEl = document.getElementById('task-id');
+      const projSelect = document.getElementById('task-project-id');
+      const taskTitleEl = document.getElementById('task-title');
+      const startEl = document.getElementById('task-start');
+      const endEl = document.getElementById('task-end');
+      const delBtn = document.getElementById('btn-delete-task');
 
-      select.innerHTML = '';
-      projects.forEach(p => {
-        let opt = document.createElement('option');
-        opt.value = p.id;
-        opt.innerText = p.name;
-        select.appendChild(opt);
-      });
+      projSelect.innerHTML = state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 
-      if (id) {
-        let task = tasks.find(t => t.id === id);
-        title.innerText = '할 일 수정 / 삭제';
-        select.value = task.projectId;
-        nameInput.value = task.name;
-        startInput.value = task.startDate;
-        endInput.value = task.endDate;
-        idInput.value = task.id;
-        deleteBtn.classList.remove('hidden');
+      if (taskId) {
+        const task = state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+        titleEl.textContent = '할 일 수정';
+        idEl.value = task.id;
+        projSelect.value = task.projectId;
+        taskTitleEl.value = task.title;
+        startEl.value = task.start;
+        endEl.value = task.end;
+        delBtn.classList.remove('hidden');
       } else {
-        title.innerText = '새 할 일 추가';
-        nameInput.value = '';
-        let todayStr = formatDateStr(new Date());
-        startInput.value = todayStr;
-        endInput.value = todayStr;
-        idInput.value = '';
-        deleteBtn.classList.add('hidden');
+        const todayStr = defaultDate || formatDateStr(new Date());
+        titleEl.textContent = '새 할 일 추가';
+        idEl.value = '';
+        projSelect.value = defaultProjectId || state.projects[0].id;
+        taskTitleEl.value = '';
+        startEl.value = todayStr;
+        endEl.value = todayStr;
+        delBtn.classList.add('hidden');
       }
+
       modal.classList.remove('hidden');
+      modal.classList.add('flex');
     }
 
     function closeTaskModal() {
-      document.getElementById('task-modal').classList.add('hidden');
+      const modal = document.getElementById('task-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
 
-    function saveTask() {
-      const projectId = document.getElementById('task-project-select').value;
-      const name = document.getElementById('task-name-input').value.trim();
-      const startDate = document.getElementById('task-start-input').value;
-      const endDate = document.getElementById('task-end-input').value;
-      const id = document.getElementById('edit-task-id').value;
+    function saveTask(e) {
+      e.preventDefault();
+      const id = document.getElementById('task-id').value;
+      const projectId = document.getElementById('task-project-id').value;
+      const title = document.getElementById('task-title').value.trim();
+      const start = document.getElementById('task-start').value;
+      let end = document.getElementById('task-end').value;
 
-      if (!name || !startDate || !endDate) {
-        alert('모든 필드를 입력해주세요.');
-        return;
-      }
-
-      if (startDate > endDate) {
-        alert('종료일이 시작일보다 빠를 수 없습니다.');
-        return;
-      }
+      if (!title || !start || !end) return;
+      if (end < start) end = start;
 
       if (id) {
-        let task = tasks.find(t => t.id === id);
-        task.projectId = projectId;
-        task.name = name;
-        task.startDate = startDate;
-        task.endDate = endDate;
+        const task = state.tasks.find(t => t.id === id);
+        if (task) {
+          task.projectId = projectId;
+          task.title = title;
+          task.start = start;
+          task.end = end;
+        }
       } else {
-        let newTask = {
+        state.tasks.push({
           id: 't_' + Date.now(),
-          projectId: projectId,
-          name: name,
-          startDate: startDate,
-          endDate: endDate
-        };
-        tasks.push(newTask);
+          projectId,
+          title,
+          start,
+          end
+        });
       }
 
       saveData();
@@ -571,62 +613,56 @@
     }
 
     function deleteTask() {
-      const id = document.getElementById('edit-task-id').value;
-      if (confirm('이 할 일을 삭제하시겠습니까?')) {
-        tasks = tasks.filter(t => t.id !== id);
-        saveData();
-        closeTaskModal();
-        renderScheduler();
-      }
+      const id = document.getElementById('task-id').value;
+      if (!id) return;
+      state.tasks = state.tasks.filter(t => t.id !== id);
+      saveData();
+      closeTaskModal();
+      renderScheduler();
     }
 
+    // 백업 / 복원 / 초기화
     function exportData() {
-      let data = { projects, tasks };
-      let blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      let url = URL.createObjectURL(blob);
-      let a = document.createElement('a');
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
       a.href = url;
       a.download = `scheduler_backup_${formatDateStr(new Date())}.json`;
       a.click();
       URL.revokeObjectURL(url);
     }
 
-    function importData(event) {
-      let file = event.target.files[0];
+    function importData(e) {
+      const file = e.target.files[0];
       if (!file) return;
-      let reader = new FileReader();
-      reader.onload = function(e) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
         try {
-          let data = JSON.parse(e.target.result);
-          if (data.projects && data.tasks) {
-            projects = data.projects;
-            tasks = data.tasks;
+          const parsed = JSON.parse(ev.target.result);
+          if (parsed.projects && parsed.tasks) {
+            state = parsed;
             saveData();
             renderScheduler();
-            alert('데이터를 성공적으로 복원했습니다!');
-          } else {
-            alert('올바르지 않은 백업 파일 형식입니다.');
+            alert('복원이 완료되었습니다.');
           }
         } catch (err) {
-          alert('JSON 파일을 읽는 중 오류가 발생했습니다.');
+          alert('올바른 백업 파일이 아닙니다.');
         }
       };
       reader.readAsText(file);
-      event.target.value = '';
     }
 
     function resetToSampleData() {
-      if (confirm('모든 데이터가 초기 샘플 데이터로 초기화됩니다. 계속하시겠습니까?')) {
-        projects = JSON.parse(JSON.stringify(sampleProjects));
-        tasks = JSON.parse(JSON.stringify(sampleTasks));
-        saveData();
-        renderScheduler();
-      }
+      if (!confirm('초기 샘플 데이터로 되돌릴까요?')) return;
+      state = getDefaultData();
+      saveData();
+      renderScheduler();
     }
 
-    window.onload = function() {
-      renderScheduler();
-    };
+    // 초기 실행
+    loadData();
+    renderScheduler();
+    scrollToToday();
   </script>
 </body>
 </html>
